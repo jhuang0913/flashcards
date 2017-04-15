@@ -1,20 +1,83 @@
-function basicCard(front, back){
-    this.frontProperty = front;
-    this.backProperty = back;
+var inquirer = require("inquirer"),
+    fs = require("fs");
+
+
+function basicCard(frontValue, backValue){
+    this.frontProperty = frontValue;
+    this.backProperty = backValue;
 }
 
-var child = new basicCard('testingFront', "testingBack")
+function clozeCard(textValue, clozeValue){
+    this.textProperty = textValue;
+    this.clozeProperty = clozeValue;
+}
 
-// console.log(child.frontProperty);
+clozeCard.prototype.partialProperty = function(){
 
-function clozeCard(text, cloze){
-    this.textProperty = text;
-    this.clozeProperty = cloze;
-    this.partialProperty = function(){
-        return "hello";
+    if(this.textProperty.includes(this.clozeProperty)){
+        return this.textProperty.replace(this.clozeProperty, "...");
+    }else{
+        return "Sorry, the value doesn't exist";
     }
-}
+};
 
-var clozeChild = new clozeCard("George Washington was the first president of the United States.", "George Washington");
-   console.log( clozeChild.partialProperty() );
 
+inquirer.prompt({
+    type: "list",
+    name: "cards",
+    message: "Choose type of cards:",
+    choices: ["Basic Card", "Cloze Card"]
+})
+.then(function(data){
+    if(data.cards === "Basic Card"){
+        return inquirer.prompt([
+            {
+                type: "input",
+                name: "front",
+                message: "Input question:"
+            },
+            {
+                type: "input",
+                name: "back",
+                message: "Input answer:"
+            }
+        ]);
+    }
+    else{
+        return inquirer.prompt([
+            {
+                type: "input",
+                name: "front",
+                message: "Input question:"
+            },
+            {
+                type: "input",
+                name: "back",
+                message: "Input answer:"
+            }
+        ]);
+    }
+}).then(function(data){
+    console.log(data);
+    addCards(data);
+})
+.catch(function(err){
+    console.log(err);
+});
+
+var addCards = function (add){
+
+
+fs.readFile("./data.json", "utf8",function(error, data){
+   if(error) throw error;
+
+   var arr = JSON.parse(data);
+
+   arr.cards.push(add);
+   
+   fs.writeFile("./data.json", JSON.stringify(arr), "utf8", function(err){
+       if(err) throw err;
+       console.log("process completed");
+   })
+});
+};
